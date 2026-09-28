@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Connectors Incentives Payout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#FF6B00; --orange-soft:#FFF1E6; --green:#1E9E57; --green-bright:#2ECC71; --green-soft:#E9F9F0;
+  --ink:#1D1D1F; --muted:#6B6B70; --line:#E6E3DF; --red:#C8321E; --red-soft:#FDEDEA; --bg:#FFFFFF;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hind",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:460px;margin:0 auto;padding:0 18px 40px}
+header{background:var(--orange);color:#fff}
+header .wrap{padding-top:22px;padding-bottom:20px}
+.brand{font-weight:600;font-size:15px;opacity:.92;margin:0}
+h1{font-size:28px;line-height:1.1;margin:4px 0 6px;font-weight:700;letter-spacing:-.01em}
+.period{margin:0;font-size:15px;opacity:.95}
+section{margin-top:24px}
+.q{font-size:18px;font-weight:600;margin:0 0 10px}
+.cities{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.city{appearance:none;border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 0 9px;font:inherit;font-weight:700;font-size:17px;color:var(--ink);cursor:pointer}
+.city small{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:1px}
+.city[aria-pressed="true"]{border-color:var(--orange);background:var(--orange-soft);color:#B84A00}
+.city[aria-pressed="true"] small{color:#B84A00}
+.row{display:flex;gap:10px}
+input{flex:1;min-width:0;font:inherit;font-size:22px;font-weight:600;letter-spacing:.04em;padding:12px 14px;border:2px solid var(--line);border-radius:12px;color:var(--ink)}
+input:focus{outline:none;border-color:var(--orange)}
+.go{appearance:none;border:0;background:var(--ink);color:#fff;font:inherit;font-weight:600;font-size:17px;padding:0 20px;border-radius:12px;cursor:pointer}
+.go:disabled{background:#BDBDC2;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid #1A73E8;outline-offset:2px}
+.msg{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--red-soft);color:var(--red);font-size:16px}
+.msg[hidden],#result[hidden]{display:none}
+/* pay slip */
+#result{margin-top:26px}
+.slip{border:2px solid var(--ink);border-radius:16px;overflow:hidden}
+.who{padding:16px 18px 12px}
+.who h2{margin:0;font-size:23px;line-height:1.15}
+.who p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stat{padding:10px 12px;border-right:1px solid var(--line)}
+.stat:nth-child(3n){border-right:0}
+.stat:nth-child(n+4){border-top:1px solid var(--line)}
+.stat:nth-child(5){grid-column:span 2;border-right:0}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:12.5px;color:var(--muted);line-height:1.2;display:block}
+.lines{list-style:none;margin:0;padding:6px 18px}
+.lines li{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:16px}
+.lines li:last-child{border-bottom:0}
+.lines .amt{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lines li.zero{color:var(--muted)}
+.lines li.zero .amt{font-weight:400}
+.lines li.minus .amt{color:var(--red)}
+.total{background:var(--green-soft);border-top:2px solid var(--ink);padding:14px 18px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.total span{font-weight:600;font-size:17px}
+.total b{font-size:34px;line-height:1;color:var(--green);font-variant-numeric:tabular-nums;white-space:nowrap}
+.again{margin-top:14px;appearance:none;border:0;background:none;color:#B84A00;font:inherit;font-weight:600;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+footer{margin-top:30px;color:var(--muted);font-size:13.5px}
+@media (prefers-reduced-motion:no-preference){.slip.show{animation:in .28s ease-out}@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
+@media (max-width:360px){.city{font-size:15px}.city small{font-size:10.5px}.total b{font-size:28px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <p class="brand">Orange Health Labs</p>
+  <h1>Connectors Incentives Payout</h1>
+  <p class="period" id="period"></p>
+</div></header>
+<main class="wrap">
+  <section>
+    <p class="q" id="cityq">Your city</p>
+    <div class="cities" id="cities" role="group" aria-labelledby="cityq"></div>
+  </section>
+  <section>
+    <label class="q" for="emp" style="display:block">Your Emp ID</label>
+    <div class="row">
+      <input id="emp" inputmode="numeric" autocomplete="off" placeholder="e.g. 2031" aria-describedby="msg">
+      <button class="go" id="go" disabled>Show payout</button>
+    </div>
+    <div class="msg" id="msg" role="alert" hidden></div>
+  </section>
+  <div id="result" hidden aria-live="polite"></div>
+  <footer>Questions about your payout? Speak to your city lead.</footer>
+</main>
+<script>
+var PERIOD = "September 2026 (21 Aug – 20 Sep)";
+var DATA = {"BLR":{"2031":["Muthu M","","29","115","100%","28","0",15210,4830,3450,435,0,0,23925],"2035":["D N Praveen","","31","202","100%","5","20",27430,14544,6060,765,3663,0,52462],"2058":["Rahul S B","","28","174","100%","4","5",22880,7308,5220,465,0,0,35873],"2062":["Sharath kumar R","","26","136","100%","1","2",17550,7344,4080,420,0,0,29394],"2095":["Mala Ramanjini","","27","113","100%","19","0",15080,5424,3390,345,0,0,24239],"2128":["Pradeep Poojary","","29","142","98%","3","0",18460,6816,4164,420,0,0,29860],"2091":["Rahul B","","24","120","100%","4","1",15470,5040,3600,375,0,1000,23485],"2854":["Om Prasad M","","31","129","99%","24","4",18590,6192,3832,525,24,0,29163],"2842":["Vikarm S","","27","132","100%","9","2",17160,7128,3943,435,0,0,28666],"3017":["Rudra Prasad B M","","26","130","100%","0","0",16900,6240,3889,390,1350,0,28769],"2983":["Rakesh U","","25","95","99%","23","0",13260,4560,2826,360,0,0,21006],"797559":["Vijay A","","29","130","100%","14","0",17030,8580,3900,420,5600,0,35530],"6348755":["Ajith Kumarbs S R","","24","117","100%","3","0",15210,4563,3510,345,0,0,23628],"202513":["Syed Mohammad","","31","129","99%","21","0",17420,6192,3842,465,0,0,27919],"202522":["Tharun Karunakaran","","30","135","100%","12","0",17940,8910,4050,435,0,500,30835],"202526":["Joseph Franklin S","","24","92","96%","20","0",13000,2208,2654,210,120,0,18192],"202531":["Manjunath M Kalasannavar","","25","123","97%","1","0",16120,9594,3569,375,45,0,29703],"202534":["Raghavendra Nayaka L","","27","89","80%","27","0",14040,6942,2136,345,0,0,23463],"202537":["Prajwal B","","21","96","97%","12","2",12870,4608,2807,345,0,0,20630],"202540":["Dileepa M K","","27","129","100%","8","1",18200,7740,3870,420,1134,0,31364],"202547":["R Arun Kumar","","26","94","100%","17","0",14690,5640,2820,255,1140,0,24545],"202609":["Karthik R T","","26","70","95%","25","1",14040,3780,2001,390,0,0,20211],"202627":["Mani K","","7","18","100%","7","0",3640,1188,540,75,0,0,5443],"202628":["John Peter C","","27","106","92%","25","0",14300,5724,2911,390,0,0,23325],"202629":["Krishna Murthy B M","","31","140","100%","24","7",19760,11760,4200,540,0,0,36260],"202633":["Santhosh R","","30","141","97%","14","5",20540,10152,4118,510,0,0,35320],"202636":["Mubarak Mysour","","27","138","100%","1","1",17810,5796,4140,420,12,0,28178],"202638":["Vignesh D","","29","108","100%","20","0",16250,7128,3240,360,990,0,27968],"2153":["David","","23","52","100%","23","0",11960,4368,1560,315,0,0,18203],"202634":["Praveen","","15","37","100%","15","0",7800,3108,1110,165,0,0,12183],"202644":["Subanalla","","29","190","100%","9","5",25480,7980,5700,465,2352,0,41977],"202645":["P Karthik","","29","112","90%","18","7",19630,4704,3018,495,330,0,28177],"202646":["Thippeswamy S","","28","115","96%","18","7",18850,4830,3325,405,3450,0,30860],"202607":["Naveen C","","25","110","88%","19","4",15340,5280,2918,435,0,0,23973],"202649":["Arvind A","","29","133","58%","22","4",17550,5187,2317,450,0,1000,24504],"202510":["Akash B","","26","130","100%","5","2",17030,3120,3900,315,0,0,24365],"202613":["Kiran Shivappa Purad","","26","166","100%","9","5",21580,6972,4980,420,2352,0,36304],"6494":["Paul Dhanraj A","","29","137","99%","7","0",17940,9864,4089,390,180,0,32463],"6497":["Vivek Reddy","","27","107","99%","15","0",15600,7704,3176,405,558,0,27443],"202635":["Vivek R","","28","129","97%","16","1",17160,8514,3756,420,0,0,29850],"202525":["Manu A","","26","90","100%","20","3",15730,6480,2700,315,552,0,25777],"6499":["Syed Abdul Azeez Azeez","","31","142","98%","15","1",18590,6816,4163,480,0,0,30049],"2026":["Karthik K","","31","165","99%","13","8",22230,13860,4876,525,0,0,41491],"818297":["Srinivas A","","8","29","100%","5","0",4550,2436,870,90,0,0,7946],"202637":["Yashwant G","","25","72","100%","22","0",13390,6048,2160,345,0,1000,20943],"202642":["Salman Khan S","","26","76","90%","23","1",14430,5472,2052,330,0,0,22284],"202512":["Vijay S","","31","149","96%","6","0",19370,7152,4302,465,630,0,31919],"2726":["Arvind V","","24","102","100%","10","0",14300,7344,3060,345,246,0,25295],"202507":["Manu G","","26","123","100%","16","4",17160,8118,3690,435,15,0,29418],"202517":["Siddappa","","25","123","96%","11","3",15990,8856,3539,360,0,1000,27745],"202530":["Veeresha N","","29","82","100%","28","1",15600,9840,2460,435,760,0,29095],"202605":["Jaffer Saddiq M","","17","65","100%","13","0",9360,4680,1950,210,0,0,16200],"7018":["Jameel Pyti","","11","61","89%","3","3",8580,2562,1636,165,2226,0,15169],"7043":["Mahmadrounak Rounak kalari","","8","42","93%","2","1",5330,2016,1172,120,684,0,9322],"7077":["Ashiq Asfak","","5","20","80%","5","0",2600,1560,480,45,0,0,4685],"2055":["Guru prasad S","","26","127","100%","4","1",16770,9144,3810,375,48,0,30147],"202618":["Anil Kumar Y","","27","99","96%","24","1",14820,6534,2850,285,0,0,24489],"3018":["R Shivakumar","","30","150","100%","3","2",20020,9900,4500,480,15,1000,33915],"202508":["Raghunatha P","","26","61","100%","26","0",13520,7320,1830,390,784,0,23844],"202521":["Vijay M","","21","126","100%","6","9",16640,6804,3780,375,500,0,28099],"202524":["Vineeth A","","27","135","100%","7","2",17420,6480,4050,405,8000,0,36355],"202539":["A Punit Kumar","","17","59","100%","12","1",9880,4248,1770,270,400,0,16568],"202604":["Manoj O","","27","68","100%","24","5",17030,8160,2040,480,760,0,28470],"202619":["N Mohan Babu","","25","52","100%","25","0",13000,6240,1560,360,760,0,21920],"202632":["Naresh Kumar R","","29","134","99%","9","0",17680,11256,3960,405,15,0,33316],"202527":["Vignesh R","","24","100","100%","17","0",13390,6600,3000,315,0,1000,22305],"7020":["Sonal S","","18","66","100%","16","0",9620,4356,1980,225,0,0,16181],"202641":["Clament J","","23","106","100%","7","0",14040,6996,3180,300,0,1000,23516],"202643":["Kiran","","17","83","100%","1","0",10920,3486,2490,255,120,0,17271],"544494":["Naveen","","30","166","100%","6","7",21450,13944,4980,540,0,0,40914],"202647":["Rajkumar Gangadhar Pujari","","31","112","100%","28","3",17680,7392,3360,435,0,0,28867],"6405":["Swaraj","","30","135","100%","16","1",17810,5670,4050,0,0,0,27530],"6406":["Fayaja Chikkeri","","23","94","98%","14","0",13130,6204,2759,345,0,0,22438],"6501":["Sagaya Raj G Raj G","","29","115","99%","23","1",16250,5520,3420,0,0,0,25190],"2033":["Arun Kumar B","","24","106","97%","14","6",16120,7632,3090,390,3000,0,30232],"35500":["Srinivas","","29","130","100%","22","3",17160,9360,3900,480,0,0,30900],"6508":["Vignesh R","","7","30","80%","3","0",4160,1980,720,75,0,0,6935],"7021":["Jashwanth P","","13","52","80%","11","0",7020,2184,1248,195,0,0,10647],"7073":["Charan singh Singh","","9","24","100%","9","0",4680,2016,720,0,0,0,7416],"7088":["Mahiboob H","","3","14","100%","1","0",1820,1008,420,0,0,0,3248]},"NCR":{"2080":["Vivek-2080","","28","88","93%","22","4",16900,10560,2451,405,240,0,30556],"2043":["Rohit-2043","","27","48","100%","27","0",14040,8928,1560,375,558,0,25461],"2099":["Mohit Kashyap-2099","","26","113","99%","14","3",16380,13560,3372,405,3000,0,36717],"2107":["Chaman Singh-2107","","26","116","100%","14","0",15080,11484,3480,390,0,0,30434],"2046":["Ashish Porwal-2046","","27","40","100%","27","0",14040,9720,1560,375,243,0,25938],"2072":["Sandeep Kumar Sharma 2072","","28","56","100%","28","0",14560,9408,1680,420,3380,0,29448],"2069":["Rajat Kumar-2069","","27","103","100%","25","0",14300,22248,3084,405,0,0,40037],"2135":["Gaurav Tyagi-2135","","30","74","100%","30","0",15600,12432,2213,360,3000,0,33605],"2077":["Sarvan Gaud-2077","","26","49","100%","26","0",13520,11907,1560,360,0,0,27347],"2665":["Sanjeev Kumar_2665","","27","50","100%","27","0",14040,8400,1560,405,0,0,24405],"2065":["Mohd Shoaib_2065","","28","49","100%","28","0",14560,9114,1560,405,1488,0,27127],"3034":["Akash Gautam","","26","105","100%","21","0",14170,13860,3145,390,528,0,32093],"3033":["Ravi Gautam","","27","50","100%","27","0",14040,9300,1560,405,744,0,26049],"3030":["Sonu Kumar Giri","","27","72","98%","27","0",14040,7128,2123,405,6250,0,29946],"3375":["Praveen Kumar","","31","74","100%","31","0",16120,17982,2215,465,0,0,36782],"4019":["Nishant","","23","62","99%","23","0",11960,7812,1836,315,0,0,21923],"4068":["Sagar","","29","58","100%","29","0",15080,9744,1740,435,650,0,27649],"4124":["Diwaker","","27","53","99%","27","0",14040,9858,1569,0,0,0,25467],"5164":["Naveen Kumar","","27","40","100%","27","0",14040,9720,1560,315,0,0,25635],"4835":["Sameem","","26","47","95%","26","0",13520,8742,1486,375,0,0,24123],"4990":["Sachin","","27","102","100%","27","0",14040,12852,3060,390,0,0,30342],"4836":["Mustakeem","","28","125","99%","17","3",17160,15750,3698,465,-1000,1000,35073],"4597":["Rijavan Khan","","27","114","99%","24","5",16640,17100,3379,0,2476,0,39595],"4593":["Amit Katiyar","","27","109","100%","19","0",15080,23544,3261,405,0,0,42290],"4893":["Prince Sharma","","26","37","98%","26","0",13520,6882,1540,390,1732,500,23564],"4908":["Irshad Ali","","26","54","98%","25","2",14690,10044,1587,405,0,0,26726],"5163":["Waseem","","27","106","100%","25","0",14300,13356,3180,390,210,0,31436],"5277":["Prashant Tyagi","","18","49","100%","18","0",9360,7350,1470,240,2250,0,20670],"6492":["Ishwardayal Pal","","27","91","100%","25","4",16250,13650,2718,450,250,0,33318],"5290":["Akash","","27","98","100%","19","4",17420,14700,2929,450,1086,0,36585],"2125":["Amit Vema","","28","36","100%","28","0",14560,4752,1560,420,396,0,21688],"6503":["Mukesh","","16","18","91%","16","0",8320,3348,492,165,0,0,12325]},"MUM":{"2118":["Ganesh Madhukar Sutar","","29","90","98%","25","4",16120,16200,2653,225,0,0,35198],"2117":["Nikhil S Verma","","24","49","100%","23","17",20800,2058,1470,585,0,0,24913],"2116":["Aniket Kamble","","28","84","94%","26","9",18200,15120,2370,75,840,0,36605],"2124":["Khan Abubakar","","28","56","99%","28","0",14560,9240,1660,150,0,0,25610],"2126":["Vikas Kirdat","","18","38","90%","18","0",9360,6270,1022,90,0,0,16742],"2115":["Vaibhav Chandrakant Aalim","","21","60","100%","20","2",11440,7200,1800,0,0,0,20440],"2120":["Sameer Sadanand Shewade","","20","65","100%","16","13",15080,11700,1950,90,3000,0,31820],"2127":["Sagar Sahdev Jadhav","","24","50","100%","24","1",13000,9750,1500,315,1260,0,25825],"2729":["Farman Shaikh","","26","60","98%","26","1",14040,9900,1766,0,0,0,25706],"2868":["Khalid","","27","51","100%","27","0",14040,9945,1560,270,0,0,25815],"2955":["Haroon Salim Sahikh","","23","77","100%","21","2",13000,5775,2302,90,0,200,20967],"3182":["Mohammad Sarafat Shah","","27","79","100%","26","0",13520,5688,2370,60,520,0,22158],"3296":["Sohel Sikandar Sayyad","","12","20","100%","12","0",6240,2400,600,15,0,500,8755],"3314":["Mohd Alim Shaikh","","25","91","100%","25","0",13000,6552,2719,255,0,0,22526],"3604":["Arman Zameer Pathan","","26","59","97%","26","3",15080,7080,1716,105,0,500,23481],"3639":["Aftab Akhtar Makrani","","26","48","99%","26","0",13520,5760,1544,195,0,0,21019],"4299":["Amit Jitendra Bhosle.","","25","51","100%","25","3",14560,9180,1526,150,0,0,25416],"4155":["Salman Turkey","","29","87","99%","28","17",23400,10440,2578,240,0,0,36658],"4127":["Sabir Mohinuddin Shaikh","","27","53","100%","27","0",14040,6360,1583,120,0,0,22103],"4429":["Azruddin Shabbir Kurne","","27","62","95%","25","10",18200,12090,1767,45,2200,0,34302],"4513":["Ramchandra Jado Goud","","25","65","93%","24","0",12480,4875,1822,360,0,0,19537],"4634":["Vedant","","27","59","100%","26","3",15080,7080,1770,390,0,0,24320],"4673":["Javed Fakir Mohammed Shaikh","","28","50","81%","28","0",14560,9750,1277,0,1395,0,26982],"4719":["Asif Anwar Shaikh","","30","73","100%","28","1",15600,8760,2190,225,0,0,26775],"4945":["Amir Sayed","","27","54","98%","27","0",14040,8910,1594,180,0,0,24724],"5053":["Arshad Salim Shaikh","","9","21","100%","8","1",5200,2520,630,90,0,500,7940],"6496":["Arfat Musa Sayyed","","29","42","95%","29","0",15080,8190,1493,15,1395,200,25973],"6504":["Saqib Alam Sadre Alam Shaikh","","26","51","99%","26","0",13520,4590,1537,195,0,0,19842],"6507":["Mohammad Hasan Asgar Ali Khan","","27","53","90%","27","0",14040,8745,1438,0,0,0,24223],"6505":["Arman Shameem Rain","","27","55","100%","27","1",14560,4950,1645,120,0,0,21275],"6506":["Faiyaz Azimuddin Shaikh","","22","43","99%","22","0",11440,3870,1282,0,0,0,16592],"7019":["Ibrahim Shaikh","","17","34","100%","17","0",8840,4080,1020,105,0,0,14045],"7064":["Rasheed Imran Raeen","","9","18","95%","9","0",4680,2160,511,30,0,0,7381],"7079":["Altaf Alam Mohd Idris Shaikh","","3","6","100%","3","0",1560,540,180,0,0,0,2280],"7078":["Juber Pathan","","3","5","100%","3","0",1560,600,150,0,0,0,2310],"7093":["Mukesh Mohan Yadav","","1","4","100%","1","0",520,480,120,0,0,0,1120]},"HYD":{"2111":["Amair Sohail Khan","","24","85","100%","24","0",12480,7395,2550,180,0,0,22605],"2150":["Akhil Uddin Khan","","25","78","100%","25","0",13000,6786,2340,30,0,0,22156],"2085":["Ambala Karan Kumar","","28","47","96%","28","0",14560,5217,1506,75,0,0,21358],"3044":["Shankar Rao Vishal","","15","31","63%","15","0",7800,3441,584,0,0,0,11825],"3093":["Mohammed Abdul Qadeer","","30","84","99%","30","0",15600,8316,2486,60,0,0,26462],"3153":["Shaik Abdul Qayum","","29","76","100%","29","4",17160,9120,2280,135,3000,0,31695],"3542":["Mohd Saleem Shareef","","27","88","100%","25","2",15080,10560,2632,90,3000,0,31362],"3744":["Kadire Narsimlu","","8","23","100%","8","0",4160,1587,690,0,0,0,6437],"3955":["Sanapathi Prasad","","30","148","100%","11","3",19240,15984,4440,180,0,0,39844],"4023":["Shaik Salman","","23","45","100%","23","0",11960,5400,1350,60,3000,0,21770],"4063":["Anwar Basha","","31","58","100%","31","1",16640,6438,1740,165,0,0,24983],"4116":["Buchireddy","","28","59","100%","28","1",15080,6549,1770,150,0,0,23549],"4117":["Prashanth Veeraboina","","23","43","100%","23","0",11960,5289,1290,30,0,500,18069],"4105":["Pinjari Mahammad Rafi","","27","70","100%","27","3",15600,7560,2091,75,0,0,25326],"4204":["Mohammed Abdul Ghany","","27","95","100%","25","0",14300,9405,2850,345,0,0,26900],"4389":["Gajulapally Harish Reddy","","24","61","100%","24","0",12480,8052,1830,210,0,0,22572],"4403":["V Jagadish","","11","42","100%","11","0",5720,5292,1260,150,0,0,12422],"4527":["Chakali Venkatesh","","31","171","100%","16","6",24310,21546,5130,315,0,0,51301],"4541":["Pallanti Prudhvi Raj","","10","22","99%","10","0",5200,2904,653,0,0,500,8257],"4535":["Dandu Vamshi Krishna","","26","108","100%","15","3",16250,12960,3240,330,0,0,32780],"4591":["Mohammed Hamed Ali","","29","72","99%","29","4",17160,8856,2142,210,0,0,28368],"4625":["Saikumar Mandugula","","30","137","100%","15","4",19110,8220,4110,150,0,0,31590],"4639":["Mohd Abdul Wasay","","23","85","100%","18","1",13000,5100,2550,45,0,0,20695],"4885":["G. Sai Naik","","25","74","96%","24","0",13130,5106,2125,15,0,500,19876],"4941":["Sayed Sameer","","28","75","100%","27","3",16250,9225,2250,105,0,0,27830],"5096":["Syed Mohsin","","24","67","99%","21","4",14820,8844,1989,195,0,500,25348],"6402":["Pandiri Lokesh","","27","64","100%","27","0",14040,8448,1920,75,0,0,24483],"6491":["Rajkishore Mishra","","25","83","100%","18","4",15730,9960,2490,285,0,0,28465],"6493":["B. Janardhan","","22","47","100%","21","1",12090,5781,1410,30,0,0,19311],"707":["Aduri Varshith","","9","21","100%","9","1",5200,2772,630,45,0,0,8647],"2987":["Daravath Srikanth","","26","106","97%","18","5",16510,6678,3098,405,0,0,26691],"2953":["K K Pramod","","3","7","71%","3","0",1560,441,150,45,0,0,2196]},"PNQ":{"6404":["Nishant Kshirsagar","","31","51","0%","30","29",31330,3060,30,0,1076,0,35496],"7032":["Atharv","","24","13","100%","24","0",12480,1014,390,0,0,0,13884],"7037":["Nandhkumar Shelke","","28","50","67%","24","0",15080,3900,1071,0,0,0,20051],"6408":["Nikhil Bhise","","30","128","96%","19","30",31850,11136,3692,0,72,0,46750],"7023":["Lakahan Limanji More More","","24","3","96%","24","0",12480,324,87,0,0,0,12891],"7062":["Saksham Chandrashekhar Ladkat Ladkat","","24","6","96%","24","0",12480,648,173,0,0,0,13301],"7069":["Shubham Gaikwad","","24","16","96%","24","0",12480,1728,462,0,0,0,14670],"7024":["Rajat Nagarkar Nagarkar","","24","24","96%","24","0",12480,2592,692,0,84,0,15848],"7083":["Ram Gavali","","12","0","96%","12","0",6240,0,0,0,0,0,6240],"7082":["Ganesh Gawali","","11","0","96%","11","0",5720,0,0,0,0,0,5720]}};
+var CITY_NAMES = {BLR:"Bengaluru",NCR:"Delhi NCR",MUM:"Mumbai",HYD:"Hyderabad",PNQ:"Pune"};
+// row: [name, hub, workingDays, trips, onTimePct, mgDays, doubleMgDays, tripsPayout, km, onTime, attendance, airport, penalty, final]
+document.addEventListener("DOMContentLoaded", function () {
+  var city = null;
+  var citiesEl = document.getElementById("cities");
+  var emp = document.getElementById("emp");
+  var go = document.getElementById("go");
+  var msg = document.getElementById("msg");
+  var result = document.getElementById("result");
+  document.getElementById("period").textContent = PERIOD;
+
+  function cleanId(v){ return String(v).replace(/[,\s]/g, ""); }
+  function rs(v){ var n = Number(String(v).replace(/,/g, "")) || 0; return "\u20B9" + Math.abs(n).toLocaleString("en-IN"); }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function refresh(){ go.disabled = !(city && cleanId(emp.value)); }
+  function showMsg(t){ msg.textContent = t; msg.hidden = false; result.hidden = true; }
+
+  Object.keys(DATA).forEach(function (c) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "city"; b.setAttribute("aria-pressed", "false");
+    b.innerHTML = esc(c) + "<small>" + esc(CITY_NAMES[c] || c) + "</small>";
+    b.addEventListener("click", function () {
+      city = c;
+      Array.prototype.forEach.call(citiesEl.children, function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      msg.hidden = true; refresh(); emp.focus();
+    });
+    citiesEl.appendChild(b);
+  });
+
+  emp.addEventListener("input", function(){ msg.hidden = true; refresh(); });
+  emp.addEventListener("keydown", function (e) { if (e.key === "Enter" && !go.disabled) search(); });
+  go.addEventListener("click", search);
+
+  function search() {
+    var id = cleanId(emp.value);
+    var r = DATA[city] && DATA[city][id];
+    if (!r) {
+      var other = Object.keys(DATA).filter(function (c) { return DATA[c][id]; })[0];
+      if (other) showMsg("Emp ID " + id + " is listed under " + other + ", not " + city + ". Tap " + other + " and try again.");
+      else showMsg("No payout found for Emp ID " + id + " in " + city + ". Check the ID and try again, or ask your city lead.");
+      return;
+    }
+    msg.hidden = true;
+    var lines = [
+      ["Trips payout", r[7]],
+      ["KM incentive", r[8]],
+      ["On-time incentive", r[9]],
+      ["On-time attendance", r[10]],
+      ["Airport / NABL duty / B2C rounds / Camp duty", r[11]]
+    ];
+    var li = lines.map(function (l) {
+      var n = Number(l[1]) || 0;
+      return '<li class="' + (n === 0 ? "zero" : "") + '"><span>' + esc(l[0]) + '</span><span class="amt">' + (n < 0 ? "\u2212 " : "") + rs(n) + "</span></li>";
+    }).join("");
+    if (Number(r[12])) li += '<li class="minus"><span>Penalty</span><span class="amt">\u2212 ' + rs(r[12]) + "</span></li>";
+    var stats = [[r[2],"Working days"],[r[3],"Total trips"],[r[4],"On-time"],[r[5],"MG days"],[r[6],"Double MG days"]];
+    var st = stats.map(function (s) { return '<div class="stat"><b>' + esc(s[0]) + "</b><span>" + s[1] + "</span></div>"; }).join("");
+    result.innerHTML =
+      '<div class="slip show">' +
+        '<div class="who"><h2>' + esc(r[0]) + "</h2><p>Emp ID " + esc(id) + " \u2013 " + esc(CITY_NAMES[city] || city) + (r[1] ? " \u2013 " + esc(r[1]) : "") + "</p></div>" +
+        '<div class="stats">' + st + "</div>" +
+        '<ul class="lines">' + li + "</ul>" +
+        '<div class="total"><span>Final payout</span><b>' + (Number(r[13]) < 0 ? "\u2212 " : "") + rs(r[13]) + "</b></div>" +
+      "</div>" +
+      '<button type="button" class="again" id="again">Check another Emp ID</button>';
+    result.hidden = false;
+    document.getElementById("again").addEventListener("click", function () {
+      result.hidden = true; emp.value = ""; refresh(); emp.focus(); window.scrollTo(0, 0);
+    });
+    result.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+});
+</script>
+</body>
+</html>
